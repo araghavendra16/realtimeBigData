@@ -1,0 +1,106 @@
+version: '3.4'
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    container_name: zookeeper
+    ports:
+      - '${PORT_ZOOKEEPER:-2181}:2181'
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    environment:
+      ZOOKEEPER_SERVER_ID: '1'
+      ZOOKEEPER_CLIENT_PORT: '2181'
+      ZOOKEEPER_TICK_TIME: '2000'
+
+  broker1:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: broker1
+    depends_on:
+      - zookeeper
+    ports:
+      - '${PORT_BROKER1:-29092}:29092'
+    volumes:
+      - broker1-data:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: '1'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENERS: 'INTERNAL://broker1:9092,EXTERNAL://broker1:29092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://broker1:9092,EXTERNAL://localhost:${PORT_BROKER1:-29092}'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+
+
+
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:0.3.3
+    container_name: kafka-ui
+    ports:
+      - '${PORT_KAFKA_UI:-28080}:8080'
+    depends_on:
+      - zookeeper
+      - broker1
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'cluster1'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker1:9092'
+      KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'
+      LOGGING_LEVEL_ROOT: 'INFO'
+      LOGGING_LEVEL_COM_PROVECTUS: 'INFO'
+  grafana:
+    image: grafana/grafana-oss:8.4.5
+    container_name: grafana
+    ports:
+      - '${PORT_GRAFANA:-23000}:3000'
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning:Z
+    environment:
+      GRAFANA_HOST: 'grafana'
+      GF_SECURITY_ADMIN_USER: 'user'
+      GF_SECURITY_ADMIN_PASSWORD: 'user'
+      GF_USERS_DEFAULT_THEME: 'light'
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres
+    ports:
+      - '${PORT_POSTGRES:-25432}:5432'
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: 'db'
+      POSTGRES_USER: '${USERID:-user}'
+      POSTGRES_PASSWORD: '${USERPWD:-user}'
+
+  pgadmin:
+    image: dpage/pgadmin4:6.8
+    container_name: pgadmin
+    depends_on:
+      - postgres
+    ports:
+      - '${PORT_PGADMIN:-20080}:80'
+    volumes:
+      - ./pgadmin4/servers.json:/pgadmin4/servers.json
+      - pgadmin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${USEREMAIL:-user@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${USERPWD:-user}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      GUNICORN_ACCESS_LOGFILE: '/dev/null'
+
+
+
+
+
+
+volumes:
+  zookeeper-data:
+  zookeeper-logs:
+  broker1-data:
+  grafana-data:
+  postgres-data:
+  pgadmin-data:
