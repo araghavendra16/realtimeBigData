@@ -1,0 +1,28 @@
+apiVersion: 1
+
+datasources:
+  - name: 'PostgreSQL'
+    uid: 'postgres'
+    type: 'postgres'
+    typeName: 'PostgreSQL'
+    typeLogoUrl: 'public/app/plugins/datasource/postgres/img/postgresql_logo.svg'
+    access: 'proxy'
+    id: 1
+    orgId: 1
+    version: 1
+    url: 'postgres:5432'
+    user: 'user'
+    database: 'db'
+    editable: true
+    readOnly: false
+    isDefault: true
+    basicAuth: false
+    jsonData:
+      postgresVersion: 903
+      sslmode: 'disable'
+      tlsAuth: false
+      tlsAuthWithCACert: false
+      tlsConfigurationMethod: 'file-path'
+      tlsSkipVerify: true
+    secureJsonData:
+      password: 'user'
