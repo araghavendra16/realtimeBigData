@@ -1,17 +1,14 @@
 # rtbd_project
-
-docker compose up
-
-run producer.py
-
+Install: 
 pip install tweepy
-pip install kafka
-
-run spark.py
-
+pip install 'kafka-python' 
 pip install pyspark 
 pip install TextBlob 
 
-table.sql 
+Run docker compose up
+
+Run producer.py
+Run spark.py
+
 
 
