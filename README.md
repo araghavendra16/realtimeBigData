@@ -15,5 +15,9 @@ Run docker compose up
 Run producer.py
 Run spark.py
 
+PostgreSQL: 
+Open http://localhost:23000/ 
+login with default credentials user:user
+
 
 
